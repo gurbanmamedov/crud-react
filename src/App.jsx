@@ -1,65 +1,59 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import ContactForm from "./components/ContactForm";
 import ContactList from "./components/ContactList";
 import "./App.css";
 
-class App extends Component {
-  state = {
-    contacts: [],
-    name: "",
-    phone: "",
+const App = () => {
+  const [contacts, setContacts] = useState([]);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+
+  useEffect(() => {
+    const savedContacts = localStorage.getItem("contacts");
+    if (savedContacts) {
+      setContacts(JSON.parse(savedContacts));
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("contacts", JSON.stringify(contacts));
+  }, [contacts]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    if (name === "name") {
+      setName(value);
+    } else if (name === "phone") {
+      setPhone(value);
+    }
   };
 
-  componentDidMount() {
-    const saveContacts = localStorage.getItem("contacts");
-    if (saveContacts) {
-      this.setState({ contacts: JSON.parse(saveContacts) });
-    }
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.contacts !== this.state.contacts) {
-      localStorage.setItem("contacts", JSON.stringify(this.state.contacts));
-    }
-  }
-
-  handleInputChange = (e) => {
-    this.setState({ [e.target.name]: e.target.value });
-  };
-
-  addContact = () => {
-    const { name, phone, contacts } = this.state;
+  const addContact = () => {
     if (name && phone) {
       const newContact = { name, phone };
-      this.setState({
-        contacts: [...contacts, newContact],
-        name: "",
-        phone: "",
-      });
+      setContacts([...contacts, newContact]);
+      setName("");
+      setPhone("");
     }
   };
 
-  deleteContact = (index) => {
-    const { contacts } = this.state;
+  const deleteContact = (index) => {
     const updatedContacts = contacts.filter((_, i) => i !== index);
-    this.setState({ contacts: updatedContacts });
+    setContacts(updatedContacts);
   };
 
-  render() {
-    const { contacts, name, phone } = this.state;
-    return (
-      <div className="App">
-        <h1>Contact Book</h1>
-        <ContactForm
-          name={name}
-          phone={phone}
-          handleInputChange={this.handleInputChange}
-          addContact={this.addContact}
-        />
-        <ContactList contacts={contacts} deleteContact={this.deleteContact} />
-      </div>
-    );
-  }
-}
+  return (
+    <div className="App">
+      <h1>Contact Book</h1>
+      <ContactForm
+        name={name}
+        phone={phone}
+        handleInputChange={handleInputChange}
+        addContact={addContact}
+      />
+      <ContactList contacts={contacts} deleteContact={deleteContact} />
+    </div>
+  );
+};
 
 export default App;
